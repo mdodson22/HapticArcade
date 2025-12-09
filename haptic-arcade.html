@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Intimacy Machine</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #instructions {
+      text-align: center;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      max-width: 600px;
+      padding: 2rem;
+      transition: opacity 0.3s ease;
+    }
+
+    #instructions.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #videoContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #videoContainer.active {
+      display: flex;
+    }
+
+    video {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="instructions">
+    <p>Welcome to the Intimacy Machine.</p>
+    <p>One partner should place the pads of their fingers on the grounding bubble, which you will find in the clouds.</p>
+    <p>The other partner should ask to hold the grounded parther’s free hand.</p>
+    <p>Then, while holding the grounded partners hand, the ungrounded partner should one of the figurines before them, <br /><br/><em>feel free to explore ...</em></p>
+    <br /><br /><p>Answer the question on the screen - don’t remove contact from the figurine until both partners  have answered the question.</p>
+    <p>Continue as long as you feel a connection.</p>
+  </div>
+
+  <div id="videoContainer">
+    <video id="videoPlayer"></video>
+  </div>
+
+  <script>
+    const mapping = {
+      'ArrowUp':    { video: 'videos/1.mp4' },
+      'ArrowDown':  { video: 'videos/2.mp4' },
+      'ArrowLeft':  { video: 'videos/3.mp4' },
+      'ArrowRight': { video: 'videos/4.mp4' },
+      ' ':          { video: 'videos/5.mp4' },
+      'click':      { video: 'videos/6.mp4' },
+      'w':          { video: 'videos/7.mp4' },
+      'a':          { video: 'videos/secretbutton.mp4' },
+    };
+
+    const instructions = document.getElementById('instructions');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoPlayer = document.getElementById('videoPlayer');
+    
+    let currentKey = null; 
+
+    window.addEventListener('keydown', (e) => {
+      e.preventDefault();
+      
+      // If a video is already playing, ignore new key presses
+      if (currentKey !== null) return;
+      
+      const m = mapping[e.key];
+      if (!m) return;
+      
+      currentKey = e.key;
+      instructions.classList.add('hidden');
+      videoContainer.classList.add('active');
+      
+      videoPlayer.src = m.video;
+      videoPlayer.loop = true;
+      videoPlayer.play().catch(err => console.log('Autoplay prevented:', err));
+    });
+
+    // Stop video on key release
+    window.addEventListener('keyup', (e) => {
+      // Only stop if the released key is the one currently playing
+      if (e.key !== currentKey) return;
+      
+      currentKey = null;
+      videoPlayer.pause();
+      videoPlayer.currentTime = 0;
+      videoPlayer.src = '';
+      videoContainer.classList.remove('active');
+      instructions.classList.remove('hidden');
+    });
+
+    window.addEventListener('mousedown', () => {
+      if (currentKey !== null) return;
+      
+      currentKey = 'click';
+      instructions.classList.add('hidden');
+      videoContainer.classList.add('active');
+      
+      const m = mapping['click'];
+      videoPlayer.src = m.video;
+      videoPlayer.loop = true;
+      videoPlayer.play().catch(err => console.log('Autoplay prevented:', err));
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (currentKey !== 'click') return;
+      
+      currentKey = null;
+      videoPlayer.pause();
+      videoPlayer.currentTime = 0;
+      videoPlayer.src = '';
+      videoContainer.classList.remove('active');
+      instructions.classList.remove('hidden');
+    });
+
+    document.body.addEventListener('click', function once() {
+      videoPlayer.play().then(() => {
+        videoPlayer.pause();
+        videoPlayer.currentTime = 0;
+      }).catch(() => {});
+      document.body.removeEventListener('click', once);
+    }, { once: true });
+  </script>
+</body>
+</html>
